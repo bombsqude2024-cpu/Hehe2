@@ -2380,8 +2380,9 @@ class _StudioBonChannelWindow:
         _channel_window = None
 
 
+
 # ---------------------------------------------------------------------------
-# StudioBon Hk V3: user-confirmed server-only unfreeze request sequence.
+# StudioBon Hk V3 - Unfreeze
 # ---------------------------------------------------------------------------
 _studiobon_hk_v3_panel = None
 _studiobon_hk_v3_busy = False
@@ -2396,62 +2397,147 @@ def _studiobon_hk_v3_connected():
 
 def _studiobon_hk_v3_confirm_send():
     global _studiobon_hk_v3_busy
+
     if _studiobon_hk_v3_busy:
         return
+
     if not _studiobon_hk_v3_connected():
-        push("برای استفاده ابتدا وارد یک سرور شوید.", color=(1.0, 0.25, 0.2), transient=True)
+        push("برای استفاده ابتدا وارد یک سرور شوید.",
+             color=(1.0, 0.25, 0.2), transient=True)
         return
+
     _studiobon_hk_v3_busy = True
-    push("در حال پردازش...", color=(1.0, 1.0, 1.0), transient=True)
+
+    # Show processing message before sending anything.
     try:
-        bs.chatmessage("Gift Pigord 100")
+        bui.screenmessage(
+            "در حال پردازش...",
+            color=(1.0, 1.0, 1.0),
+            transient=True,
+            seconds=3.0
+        )
     except Exception:
-        _studiobon_hk_v3_busy = False
-        push("ارسال پیام اول ناموفق بود.", color=(1.0, 0.25, 0.2), transient=True)
-        return
+        pass
 
-    def _send_followup():
+    def _send_sequence():
         global _studiobon_hk_v3_busy
-        try:
-            if _studiobon_hk_v3_connected():
-                bs.chatmessage("1")
-            else:
-                push("اتصال به سرور قطع شد؛ پیام دوم ارسال نشد.", color=(1.0, 0.25, 0.2), transient=True)
-        except Exception:
-            pass
-        finally:
-            _studiobon_hk_v3_busy = False
 
-    teck(1.0, _send_followup)
+        if not _studiobon_hk_v3_connected():
+            _studiobon_hk_v3_busy = False
+            push("اتصال به سرور برقرار نیست.",
+                 color=(1.0, 0.25, 0.2), transient=True)
+            return
+
+        try:
+            bs.chatmessage("Gift Pigord 100")
+        except Exception:
+            _studiobon_hk_v3_busy = False
+            push("ارسال پیام اول ناموفق بود.",
+                 color=(1.0, 0.25, 0.2), transient=True)
+            return
+
+        def _send_followup():
+            global _studiobon_hk_v3_busy
+            try:
+                if _studiobon_hk_v3_connected():
+                    bs.chatmessage("1")
+                else:
+                    push("اتصال قطع شد؛ پیام دوم ارسال نشد.",
+                         color=(1.0, 0.25, 0.2), transient=True)
+            except Exception:
+                pass
+            finally:
+                _studiobon_hk_v3_busy = False
+
+        teck(1.0, _send_followup)
+
+    teck(0.25, _send_sequence)
 
 
 def _open_studiobon_hk_v3_panel():
     global _studiobon_hk_v3_panel
+
     if _studiobon_hk_v3_panel is not None:
         try:
-            bui.containerwidget(edit=_studiobon_hk_v3_panel, transition="in_scale")
+            bui.containerwidget(
+                edit=_studiobon_hk_v3_panel,
+                transition="in_scale"
+            )
             return
         except Exception:
             _studiobon_hk_v3_panel = None
+
     sw, sh = bui.get_virtual_screen_size()
-    width, height = min(650, int(sw - 30)), min(570, int(sh - 30))
-    x, y = (sw - width) / 2, (sh - height) / 2
-    root = bui.containerwidget(parent=gsw("overlay_stack"), position=(x, y),
-        size=(width, height), transition="in_scale", color=(0.025, 0.07, 0.16))
+    width = min(650, int(sw - 30))
+    height = min(570, int(sh - 30))
+    x = (sw - width) / 2
+    y = (sh - height) / 2
+
+    root = bui.containerwidget(
+        parent=gsw("overlay_stack"),
+        position=(x, y),
+        size=(width, height),
+        transition="in_scale",
+        color=(0.025, 0.07, 0.16)
+    )
     _studiobon_hk_v3_panel = root
-    bui.textwidget(parent=root, position=(15, height-65), size=(width-30, 42),
-        text="Unfreeze", h_align="center", v_align="center", color=(1,1,1), scale=1.15)
-    message = ("قبل از زدن روی دکمه تایید اطمینام حاصل فرمایید که اسم خاصتان مخفی نباشد . "
-        "چرا که این قابلیت با توجه به اطلاعات اسم خاص و اسم اکانت مربوط به شما که از سرور دریافت میکند "
-        "میتواند چه زمانی که کسی شما را فریز کند و چه زمانی که بمب یا ترکیدن موجب فریز شما شود سریعا شما را "
-        "با ارسال حرف (یوu) در چت آنفریز کند .. عدم مشخص بودن اسم خاص شما در هنگام استفاده برای اولین بار "
-        "باعث میشود این قابلیت کلا کار نکند و مجبور میشوید آنرا حذف نصب و نصب مجدد کنید .")
-    scroll = bui.scrollwidget(parent=root, position=(18, 105), size=(width-36, height-205),
-        highlight=False, capture_arrows=True, color=(0.035, 0.10, 0.22))
-    content_h = max(470, height-180)
-    content = bui.containerwidget(parent=scroll, size=(width-60, content_h), background=False)
-    bui.textwidget(parent=content, position=(12, content_h-18), size=(width-84, content_h-35),
-        text=message, h_align="right", v_align="top", color=(1,1,1), scale=0.78)
+
+    bui.textwidget(
+        parent=root,
+        position=(15, height - 65),
+        size=(width - 30, 42),
+        text="Unfreeze",
+        h_align="center",
+        v_align="center",
+        color=(1, 1, 1),
+        scale=1.15
+    )
+
+    # Each line is a separate widget to avoid long-text clipping.
+    lines = [
+        "قبل از زدن روی دکمه تایید اطمینام حاصل فرمایید",
+        "که اسم خاصتان مخفی نباشد.",
+        "چرا که این قابلیت با توجه به اطلاعات اسم خاص و",
+        "اسم اکانت مربوط به شما که از سرور دریافت میکند",
+        "میتواند چه زمانی که کسی شما را فریز کند و چه",
+        "زمانی که بمب یا ترکیدن موجب فریز شما شود،",
+        "سریعا شما را با ارسال حرف (یوu) در چت آنفریز کند.",
+        "عدم مشخص بودن اسم خاص شما در هنگام استفاده",
+        "برای اولین بار باعث میشود این قابلیت کلا کار نکند",
+        "و مجبور میشوید آنرا حذف نصب و نصب مجدد کنید."
+    ]
+
+    scroll_y = 105
+    scroll_h = height - 205
+    scroll = bui.scrollwidget(
+        parent=root,
+        position=(18, scroll_y),
+        size=(width - 36, scroll_h),
+        highlight=False,
+        capture_arrows=True,
+        color=(0.035, 0.10, 0.22)
+    )
+
+    line_height = 43
+    content_h = max(scroll_h + 20, len(lines) * line_height + 30)
+
+    content = bui.containerwidget(
+        parent=scroll,
+        size=(width - 60, content_h),
+        background=False
+    )
+
+    for i, line in enumerate(lines):
+        bui.textwidget(
+            parent=content,
+            position=(12, content_h - 35 - (i * line_height)),
+            size=(width - 84, 38),
+            text=line,
+            h_align="center",
+            v_align="center",
+            color=(1, 1, 1),
+            scale=0.78
+        )
 
     def _close_panel():
         global _studiobon_hk_v3_panel
@@ -2465,9 +2551,16 @@ def _open_studiobon_hk_v3_panel():
         _close_panel()
         _studiobon_hk_v3_confirm_send()
 
-    bui.buttonwidget(parent=root, position=(18, 28), size=(width-36, 52),
-        label="مطلب رو خوندم /تایید", color=(0.08, 0.62, 0.20),
-        textcolor=(1,1,1), on_activate_call=_accept)
+    bui.buttonwidget(
+        parent=root,
+        position=(18, 28),
+        size=(width - 36, 52),
+        label="مطلب رو خوندم /تایید",
+        color=(0.08, 0.62, 0.20),
+        textcolor=(1, 1, 1),
+        on_activate_call=_accept
+    )
+
 
 
 class _BonV2Window:
