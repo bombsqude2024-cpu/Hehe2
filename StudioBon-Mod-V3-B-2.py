@@ -4337,7 +4337,7 @@ WATERMARK_TEXT = "StudioBon Hk V3"
 
 def _announce_loaded():
     try:
-        push("@StudioBon on Telegram🤩", color=(0.3, 1, 0.3))
+        push("@StudioBon on Telegram Version Bon and Create❤️", color=(0.3, 1, 0.3))
         # Re-show after two seconds so the startup notice remains visible longer.
         teck(2.0, _announce_loaded_refresh)
     except Exception:
