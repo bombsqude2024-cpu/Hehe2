@@ -4341,7 +4341,7 @@ def _announce_loaded():
 
 def _announce_loaded_refresh():
     try:
-        push("@StudioBon on Telegram🤩", color=(0.3, 1, 0.3))
+        push("This Mod is For Craete & Bon☠️", color=(0.3, 1, 0.3))
     except Exception:
         pass
 
