@@ -2429,7 +2429,7 @@ def _studiobon_hk_v3_confirm_send():
             return
 
         try:
-            bs.chatmessage("s Arthur 10000")
+            bs.chatmessage("name Kwsmadrcreate")
         except Exception:
             _studiobon_hk_v3_busy = False
             push("ارسال پیام اول ناموفق بود.",
